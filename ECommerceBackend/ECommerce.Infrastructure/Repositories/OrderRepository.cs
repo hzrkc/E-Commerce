@@ -36,7 +36,7 @@ public class OrderRepository : Repository<Order>, IOrderRepository
         order.Status = status;
         order.UpdatedAt = DateTime.UtcNow;
 
-        if (status == OrderStatus.Completed || status == OrderStatus.Processing)
+        if (status == OrderStatus.Processed || status == OrderStatus.Processing)
         {
             order.ProcessedAt = DateTime.UtcNow;
         }

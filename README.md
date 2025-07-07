@@ -1,6 +1,6 @@
 # 🛒 E-Commerce Backend - Mikroservis Projesi
 
-Bu proje, .NET 7 ile geliştirilmiş bir e-ticaret mikroservis mimarisi örneğidir. Aşağıdaki bileşenleri içerir:
+Bu proje, .NET 8 ile geliştirilmiş bir e-ticaret mikroservis mimarisi örneğidir. Aşağıdaki bileşenleri içerir:
 
 - **API**: Sipariş oluşturma ve listeleme
 - **Worker**: RabbitMQ kuyruğundan sipariş mesajı alır, işler ve Redis'e log atar
@@ -15,7 +15,7 @@ Bu proje, .NET 7 ile geliştirilmiş bir e-ticaret mikroservis mimarisi örneği
 ## 🚀 Kurulum
 
 ### 1. Gerekli Bağımlılıklar
-- [.NET 7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - [PostgreSQL](https://www.postgresql.org/download/)
 - [RabbitMQ](https://www.rabbitmq.com/download.html)
 - [Redis (Memurai veya Docker)](https://www.memurai.com/download)
