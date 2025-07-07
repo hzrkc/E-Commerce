@@ -11,7 +11,7 @@ namespace ECommerce.Infrastructure.Services;
 public class RabbitMQService : IMessageBroker, IDisposable
 {
     private readonly IConnection _connection;
-    private readonly IModel _channel;
+    private readonly RabbitMQ.Client.IModel _channel;
     private readonly ILogger<RabbitMQService> _logger;
 
     public RabbitMQService(ILogger<RabbitMQService> logger)
