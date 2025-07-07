@@ -9,8 +9,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load environment variables from .env
+DotNetEnv.Env.Load();
 
 // Serilog configuration
 Log.Logger = new LoggerConfiguration()
@@ -24,12 +28,18 @@ builder.Host.UseSerilog();
 // Add services to the container
 builder.Services.AddControllers();
 
+// Read from env or fallback to appsettings.json
+var redisConnection = Environment.GetEnvironmentVariable("REDIS_HOST") ?? builder.Configuration["RedisSettings:ConnectionString"];
+var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? builder.Configuration["JwtSettings:SecretKey"];
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? AppConstants.Auth.JwtIssuer;
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? AppConstants.Auth.JwtAudience;
+
 // Infrastructure services
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["RedisSettings:ConnectionString"];
+    options.Configuration = redisConnection;
 });
 
 builder.Services.AddScoped<ICacheService, CacheService>();
@@ -38,8 +48,6 @@ builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 // JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not found");
 var key = Encoding.ASCII.GetBytes(secretKey);
 
 builder.Services.AddAuthentication(options =>
@@ -55,8 +63,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = AppConstants.Auth.JwtIssuer,
-        ValidAudience = AppConstants.Auth.JwtAudience,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.Zero
     };

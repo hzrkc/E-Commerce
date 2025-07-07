@@ -14,6 +14,14 @@ Bu proje, .NET 8 ile geliştirilmiş bir e-ticaret mikroservis mimarisi örneği
 
 ## 🚀 Kurulum
 
+### 0. Ortam Değişkenleri (.env)
+
+Projeye örnek ortam değişkenlerini tanımlamak için `.env.example` dosyası eklenmiştir. Best practice olarak aşağıdaki şekilde oluşturabilirsiniz:
+
+```bash
+cp .env.example.env
+```
+
 ### 1. Gerekli Bağımlılıklar
 - [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - [PostgreSQL](https://www.postgresql.org/download/)
