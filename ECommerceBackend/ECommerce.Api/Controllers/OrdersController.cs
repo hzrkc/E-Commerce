@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ECommerce.Core.Interfaces;
-using ECommerce.Core.Entities;
 using ECommerce.Shared.DTOs;
 using ECommerce.Shared.Common;
 using ECommerce.Shared.Events;
 using ECommerce.Shared.Constants;
+using ECommerce.Core.Entities;
 using ECommerce.Core.Enums;
 
 namespace ECommerce.Api.Controllers;
@@ -43,28 +43,41 @@ public class OrdersController : BaseController
     {
         try
         {
+            _logger.LogInformation("Creating order for user: {UserId}, product: {ProductId}",
+                request.UserId, request.ProductId);
+
             // Validate user exists
-            var userExists = await _userRepository.ExistsAsync(Guid.Parse(request.UserId));
-            if (!userExists)
+            if (!Guid.TryParse(request.UserId, out var userId))
             {
-                return CreateErrorResponse<OrderResponse>("User not found");
+                return Error<OrderResponse>("Invalid user ID format");
             }
 
-            // Validate product exists and has enough stock
-            var product = await _productRepository.GetByIdAsync(Guid.Parse(request.ProductId));
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return Error<OrderResponse>("User not found", statusCode: 404);
+            }
+
+            // Validate product exists and availability
+            if (!Guid.TryParse(request.ProductId, out var productId))
+            {
+                return Error<OrderResponse>("Invalid product ID format");
+            }
+
+            var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
             {
-                return CreateErrorResponse<OrderResponse>("Product not found");
+                return Error<OrderResponse>("Product not found", statusCode: 404);
             }
 
             if (!product.IsActive)
             {
-                return CreateErrorResponse<OrderResponse>("Product is not available");
+                return Error<OrderResponse>("Product is not available");
             }
 
             if (product.StockQuantity < request.Quantity)
             {
-                return CreateErrorResponse<OrderResponse>("Insufficient stock");
+                return Error<OrderResponse>("Insufficient stock");
             }
 
             // Create order
@@ -81,25 +94,26 @@ public class OrdersController : BaseController
             await _orderRepository.AddAsync(order);
 
             // Update product stock
-            await _productRepository.UpdateStockAsync(request.ProductId, -request.Quantity);
+            product.StockQuantity -= request.Quantity;
+            await _productRepository.UpdateAsync(product);
 
-            // Invalidate cache for this user
+            // Invalidate cache
             var cacheKey = string.Format(AppConstants.Cache.UserOrdersKey, request.UserId);
             await _cacheService.RemoveAsync(cacheKey);
 
-            // Publish order placed event
-            var orderPlacedEvent = new OrderPlacedEvent
+            // Publish event to RabbitMQ
+            var orderEvent = new OrderPlacedEvent
             {
                 OrderId = order.Id,
-                UserId = order.UserId,
-                ProductId = order.ProductId,
-                Quantity = order.Quantity,
+                UserId = request.UserId,
+                ProductId = request.ProductId,
+                Quantity = request.Quantity,
                 TotalAmount = order.TotalAmount,
                 CreatedAt = order.CreatedAt,
                 CorrelationId = GetCorrelationId()
             };
 
-            await _messageBroker.PublishAsync(AppConstants.Queue.OrderPlacedQueue, orderPlacedEvent);
+            await _messageBroker.PublishAsync(AppConstants.Queue.OrderPlacedQueue, orderEvent);
 
             var response = new OrderResponse
             {
@@ -110,32 +124,35 @@ public class OrdersController : BaseController
                 PaymentMethod = order.PaymentMethod,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
-                CreatedAt = order.CreatedAt
+                CreatedAt = order.CreatedAt,
+                ProcessedAt = order.ProcessedAt
             };
 
             _logger.LogInformation("Order created successfully: {OrderId}", order.Id);
-            return CreateResponse(response, "Order created successfully");
+            return Success(response, "Order created successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating order for user: {UserId}", request.UserId);
-            return CreateErrorResponse<OrderResponse>("An error occurred while creating the order");
+            _logger.LogError(ex, "Error creating order");
+            return Error<OrderResponse>("An error occurred while creating the order", statusCode: 500);
         }
     }
 
     [HttpGet("{userId}")]
-    public async Task<ActionResult<ApiResponse<OrderListResponse>>> GetOrdersByUserId(string userId)
+    public async Task<ActionResult<ApiResponse<OrderListResponse>>> GetUserOrders(string userId)
     {
         try
         {
+            _logger.LogInformation("Getting orders for user: {UserId}", userId);
+
             // Check cache first
             var cacheKey = string.Format(AppConstants.Cache.UserOrdersKey, userId);
             var cachedOrders = await _cacheService.GetAsync<OrderListResponse>(cacheKey);
 
             if (cachedOrders != null)
             {
-                _logger.LogInformation("Retrieved orders from cache for user: {UserId}", userId);
-                return CreateResponse(cachedOrders, "Orders retrieved from cache");
+                _logger.LogInformation("Orders retrieved from cache for user: {UserId}", userId);
+                return Success(cachedOrders);
             }
 
             // Get from database
@@ -162,46 +179,15 @@ public class OrdersController : BaseController
             // Cache the result
             await _cacheService.SetAsync(cacheKey, response, TimeSpan.FromMinutes(AppConstants.Cache.DefaultTtlMinutes));
 
-            _logger.LogInformation("Retrieved {Count} orders for user: {UserId}", orderResponses.Count, userId);
-            return CreateResponse(response, "Orders retrieved successfully");
+            _logger.LogInformation("Orders retrieved from database for user: {UserId}, count: {Count}",
+                userId, orderResponses.Count);
+
+            return Success(response);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving orders for user: {UserId}", userId);
-            return CreateErrorResponse<OrderListResponse>("An error occurred while retrieving orders");
-        }
-    }
-
-    [HttpGet("{orderId:guid}")]
-    public async Task<ActionResult<ApiResponse<OrderResponse>>> GetOrderById(Guid orderId)
-    {
-        try
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null)
-            {
-                return CreateErrorResponse<OrderResponse>("Order not found");
-            }
-
-            var response = new OrderResponse
-            {
-                Id = order.Id,
-                UserId = order.UserId,
-                ProductId = order.ProductId,
-                Quantity = order.Quantity,
-                PaymentMethod = order.PaymentMethod,
-                Status = order.Status,
-                TotalAmount = order.TotalAmount,
-                CreatedAt = order.CreatedAt,
-                ProcessedAt = order.ProcessedAt
-            };
-
-            return CreateResponse(response, "Order retrieved successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving order: {OrderId}", orderId);
-            return CreateErrorResponse<OrderResponse>("An error occurred while retrieving the order");
+            return Error<OrderListResponse>("An error occurred while retrieving orders", statusCode: 500);
         }
     }
 }

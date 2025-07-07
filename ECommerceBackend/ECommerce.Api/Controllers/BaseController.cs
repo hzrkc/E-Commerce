@@ -5,6 +5,7 @@ namespace ECommerce.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public abstract class BaseController : ControllerBase
 {
     protected string GetCorrelationId()
@@ -14,34 +15,29 @@ public abstract class BaseController : ControllerBase
 
     protected string? GetCurrentUserId()
     {
-        return HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return HttpContext.User.FindFirst("user_id")?.Value;
     }
 
-    protected ActionResult<ApiResponse<T>> CreateResponse<T>(T data, string message = "Success")
+    protected ActionResult<ApiResponse<T>> Success<T>(T data, string message = "Success")
     {
         var response = ApiResponse<T>.SuccessResponse(data, message);
         response.CorrelationId = GetCorrelationId();
         return Ok(response);
     }
 
-    protected ActionResult<ApiResponse> CreateResponse(string message = "Success")
-    {
-        var response = ApiResponse.SuccessResult(message);
-        response.CorrelationId = GetCorrelationId();
-        return Ok(response);
-    }
-
-    protected ActionResult<ApiResponse<T>> CreateErrorResponse<T>(string message, List<string>? errors = null)
+    protected ActionResult<ApiResponse<T>> Error<T>(string message, List<string>? errors = null, int statusCode = 400)
     {
         var response = ApiResponse<T>.ErrorResponse(message, errors);
         response.CorrelationId = GetCorrelationId();
-        return BadRequest(response);
-    }
 
-    protected ActionResult<ApiResponse> CreateErrorResponse(string message, List<string>? errors = null)
-    {
-        var response = ApiResponse.ErrorResult(message, errors);
-        response.CorrelationId = GetCorrelationId();
-        return BadRequest(response);
+        return statusCode switch
+        {
+            400 => BadRequest(response),
+            401 => Unauthorized(response),
+            403 => Forbid(),
+            404 => NotFound(response),
+            500 => StatusCode(500, response),
+            _ => StatusCode(statusCode, response)
+        };
     }
 }

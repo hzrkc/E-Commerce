@@ -13,28 +13,57 @@ var builder = WebApplication.CreateBuilder(args);
 // Serilog configuration
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
     .WriteTo.Console()
-    .WriteTo.File("logs/ecommerce-api-.log", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
 
-// Swagger configuration with JWT support
+// Infrastructure services
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Application services
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+// JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not found");
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = AppConstants.Auth.JwtIssuer,
+        ValidAudience = AppConstants.Auth.JwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// Swagger configuration
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ECommerce API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "E-Commerce API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -47,46 +76,21 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            new string[] { }
         }
     });
 });
 
-// Infrastructure services
-builder.Services.AddInfrastructureServices(builder.Configuration);
-
-// Application services
-builder.Services.AddScoped<IJwtService, JwtService>();
-
-// JWT Authentication
-var jwtKey = builder.Configuration["Jwt:SecretKey"] ?? "default-secret-key-minimum-256-bits-required";
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ValidateIssuer = true,
-            ValidIssuer = AppConstants.Auth.JwtIssuer,
-            ValidateAudience = true,
-            ValidAudience = AppConstants.Auth.JwtAudience,
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-
-builder.Services.AddAuthorization();
-
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
-    {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
 });
 
 var app = builder.Build();
@@ -99,9 +103,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
 
+// Custom middleware
 app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseAuthentication();
@@ -109,4 +113,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    Log.Information("Starting E-Commerce API");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
