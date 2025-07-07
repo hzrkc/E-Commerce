@@ -1,12 +1,14 @@
+using ECommerce.Api.Middleware;
+using ECommerce.Api.Services;
+using ECommerce.Core.Interfaces;
+using ECommerce.Infrastructure.DependencyInjection;
+using ECommerce.Infrastructure.Services;
+using ECommerce.Shared.Constants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Serilog;
-using ECommerce.Infrastructure.DependencyInjection;
-using ECommerce.Shared.Constants;
-using ECommerce.Api.Services;
-using ECommerce.Api.Middleware;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,13 @@ builder.Services.AddControllers();
 
 // Infrastructure services
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["RedisSettings:ConnectionString"];
+});
+
+builder.Services.AddScoped<ICacheService, CacheService>();
 
 // Application services
 builder.Services.AddScoped<IJwtService, JwtService>();

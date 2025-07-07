@@ -1,24 +1,30 @@
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using StackExchange.Redis;
 using ECommerce.Shared.Events;
+using ECommerce.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Worker;
 
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
     private IConnection _connection;
     private IModel _channel;
     private IDatabase _redisDb;
 
-    public Worker(ILogger<Worker> logger)
+    public Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
+        _scopeFactory = scopeFactory;
+
         InitializeRabbitMQ();
         InitializeRedis();
     }
@@ -77,7 +83,21 @@ public class Worker : BackgroundService
                 // Simulate processing time
                 await Task.Delay(2000, stoppingToken);
 
-                // Write to Redis
+                // 📌 Veritabanına ProcessedAt ve Status yaz
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                var order = await dbContext.Orders.FindAsync(orderEvent.OrderId);
+                if (order != null)
+                {
+                    order.ProcessedAt = DateTime.UtcNow;
+                    order.Status = ECommerce.Core.Enums.OrderStatus.Processed;
+
+                    await dbContext.SaveChangesAsync();
+                    _logger.LogInformation("Updated order in DB: {OrderId}", orderEvent.OrderId);
+                }
+
+                // Redis'e log
                 var key = $"order_processed:{orderEvent.OrderId}";
                 var value = $"Order processed at {DateTime.UtcNow:O}";
                 await _redisDb.StringSetAsync(key, value);

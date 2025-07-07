@@ -19,7 +19,7 @@ public class JwtService : IJwtService
     public string GenerateToken(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"] ?? "default-secret-key-minimum-256-bits-required");
+        var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"] ?? "default-secret-key-minimum-256-bits-required");
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
