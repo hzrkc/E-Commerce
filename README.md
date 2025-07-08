@@ -119,6 +119,33 @@ docker-compose up -d
 
 ---
 
+### 🧪 Testler
+
+Proje, hem unit test hem de integration test desteği içerir:
+
+#### ✅ Unit Test:
+- `JwtServiceTests.cs`: Token oluşturma servisinin çıktısı doğrulanır
+
+#### ✅ Integration Test:
+- `OrdersControllerTests.cs`: Token olmadan API'ye erişimin engellenip engellenmediği kontrol edilir (401 Unauthorized)
+- `OrdersControllerAuthorizedTests.cs`: Gerçek JWT token ile sipariş oluşturma testi yapılır
+
+#### 🔧 Test Komutları:
+```bash
+cd ECommerce.Tests
+
+dotnet test
+```
+
+> Test sırasında `WebApplicationFactory` ile gerçek API ayağa kaldırılır.
+
+#### ⚠️ Notlar:
+- `ECommerce.Api.csproj` içinde `PreserveCompilationContext = true` tanımlı olmalıdır
+- `Program.cs` içinde `public partial class Program {}` satırı gereklidir
+- Varsayılan test kullanıcıları ve ürün ID’leri setup aşamasında yaratılmalı ya da sabit olarak kullanılmalıdır
+
+---
+
 ## 🔍 Test Akışı
 1. Login → Token al
 2. Sipariş oluştur
