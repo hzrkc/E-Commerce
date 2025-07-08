@@ -1,88 +1,12 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{26FA99B1-1B4D-4596-8343-23EE2D6CE33E}|ECommerce.Tests\\ECommerce.Tests.csproj|c:\\users\\pc\\desktop\\e-commerce\\ecommercebackend\\ecommerce.tests\\ecommerce.tests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{26FA99B1-1B4D-4596-8343-23EE2D6CE33E}|ECommerce.Tests\\ECommerce.Tests.csproj|solutionrelative:ecommerce.tests\\ecommerce.tests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{245FBFE2-DFAB-4FBA-A209-D7B693FA14A8}|ECommerce.Api\\ECommerce.Api.csproj|c:\\users\\pc\\desktop\\e-commerce\\ecommercebackend\\ecommerce.api\\ecommerce.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{245FBFE2-DFAB-4FBA-A209-D7B693FA14A8}|ECommerce.Api\\ECommerce.Api.csproj|solutionrelative:ecommerce.api\\ecommerce.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{26FA99B1-1B4D-4596-8343-23EE2D6CE33E}|ECommerce.Tests\\ECommerce.Tests.csproj|c:\\users\\pc\\desktop\\e-commerce\\ecommercebackend\\ecommerce.tests\\orderscontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{26FA99B1-1B4D-4596-8343-23EE2D6CE33E}|ECommerce.Tests\\ECommerce.Tests.csproj|solutionrelative:ecommerce.tests\\orderscontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{26FA99B1-1B4D-4596-8343-23EE2D6CE33E}|ECommerce.Tests\\ECommerce.Tests.csproj|c:\\users\\pc\\desktop\\e-commerce\\ecommercebackend\\ecommerce.tests\\jwtservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{26FA99B1-1B4D-4596-8343-23EE2D6CE33E}|ECommerce.Tests\\ECommerce.Tests.csproj|solutionrelative:ecommerce.tests\\jwtservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": [
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ECommerce.Tests",
-              "DocumentMoniker": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Tests\\ECommerce.Tests.csproj",
-              "RelativeDocumentMoniker": "ECommerce.Tests\\ECommerce.Tests.csproj",
-              "ToolTip": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Tests\\ECommerce.Tests.csproj",
-              "RelativeToolTip": "ECommerce.Tests\\ECommerce.Tests.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-07-08T10:35:15.498Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ECommerce.Api",
-              "DocumentMoniker": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Api\\ECommerce.Api.csproj",
-              "RelativeDocumentMoniker": "ECommerce.Api\\ECommerce.Api.csproj",
-              "ToolTip": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Api\\ECommerce.Api.csproj",
-              "RelativeToolTip": "ECommerce.Api\\ECommerce.Api.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAASAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-07-08T10:34:46.176Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "OrdersControllerTests.cs",
-              "DocumentMoniker": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Tests\\OrdersControllerTests.cs",
-              "RelativeDocumentMoniker": "ECommerce.Tests\\OrdersControllerTests.cs",
-              "ToolTip": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Tests\\OrdersControllerTests.cs",
-              "RelativeToolTip": "ECommerce.Tests\\OrdersControllerTests.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T10:32:02.35Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "JwtServiceTests.cs",
-              "DocumentMoniker": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Tests\\JwtServiceTests.cs",
-              "RelativeDocumentMoniker": "ECommerce.Tests\\JwtServiceTests.cs",
-              "ToolTip": "C:\\Users\\pc\\Desktop\\E-Commerce\\ECommerceBackend\\ECommerce.Tests\\JwtServiceTests.cs",
-              "RelativeToolTip": "ECommerce.Tests\\JwtServiceTests.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T10:27:05.593Z",
-              "EditorCaption": ""
-            }
-          ]
-        }
-      ]
+      "DocumentGroups": []
     }
   ]
 }
