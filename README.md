@@ -1,3 +1,10 @@
+# 🛒 E-Commerce Backend (Mikroservis)
+
+🇹🇷 Türkçe dokümantasyon aşağıda.  
+🌐 [English version here →](./README.en.md)
+
+---
+
 # 🛒 E-Commerce Backend - Mikroservis Projesi
 
 Bu proje, .NET 8 ile geliştirilmiş bir e-ticaret mikroservis mimarisi örneğidir. Aşağıdaki bileşenleri içerir:
@@ -168,4 +175,3 @@ ECommerce.Shared      → DTO, Events, Constants, Enums
 
 ## 📝 Lisans
 MIT
-
